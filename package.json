@@ -1,40 +1,54 @@
 {
-  "name": "salesforce-app",
-  "private": true,
+  "name": "awesome",
   "version": "1.0.0",
-  "description": "Salesforce App",
+  "description": "awesome simple pipeline",
   "scripts": {
-    "lint": "eslint **/{aura,lwc}/**",
-    "test": "npm run test:unit",
-    "test:unit": "sfdx-lwc-jest",
-    "test:unit:watch": "sfdx-lwc-jest --watch",
-    "test:unit:debug": "sfdx-lwc-jest --debug",
-    "test:unit:coverage": "sfdx-lwc-jest --coverage",
+    "lint": "npm run lint:lwc && npm run lint:apex",
+    "lint:lwc": "eslint force-app/main/default/lwc && eslint force-app/sample/default/lwc",
+    "lint:apex": "pmd pmd -minimumpriority 2 -d force-app -R apex-ruleset.xml -f text -l apex",
+    "test": "npm run test:unit && npm run test:apex",
+    "test:coverage": "npm run test:unit:coverage && npm run test:apex:coverage",
+    "test:apex": "sfdx force:apex:test:run -r tap -d ./tests/apex -s testSuite -w 20",
+    "test:apex:coverage": "sfdx force:apex:test:run -r tap -d ./tests/apex -s testSuite -w 20 -c",
+    "test:unit": "sfdx-lwc-jest -- --runInBand",
+    "test:unit:watch": "sfdx-lwc-jest --watch -- --runInBand",
+    "test:unit:debug": "sfdx-lwc-jest --debug -- --runInBand",
+    "test:unit:coverage": "sfdx-lwc-jest --coverage -- --runInBand",
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
-    "postinstall": "husky install",
-    "precommit": "lint-staged"
+    "build:playground": "rollup --config ./rollup/rollup.config.js"
   },
   "devDependencies": {
-    "@lwc/eslint-plugin-lwc": "^1.1.2",
-    "@prettier/plugin-xml": "^2.0.1",
-    "@salesforce/eslint-config-lwc": "^3.2.3",
-    "@salesforce/eslint-plugin-aura": "^2.0.0",
-    "@salesforce/eslint-plugin-lightning": "^1.0.0",
-    "@salesforce/sfdx-lwc-jest": "^1.1.0",
-    "eslint": "^8.11.0",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-jest": "^26.1.2",
-    "husky": "^7.0.4",
-    "lint-staged": "^12.3.7",
-    "prettier": "^2.6.0",
-    "prettier-plugin-apex": "^1.10.0"
+    "@lwc/engine": "^1.5.1",
+    "@lwc/rollup-plugin": "^1.5.1",
+    "@lwc/synthetic-shadow": "^1.5.1",
+    "@lwc/wire-service": "^1.5.1",
+    "@prettier/plugin-xml": "^0.7.0",
+    "@rollup/plugin-replace": "^2.3.2",
+    "@salesforce/eslint-config-lwc": "^0.4.0",
+    "@salesforce/sfdx-lwc-jest": "^0.7.1",
+    "eslint": "^5.16.0",
+    "husky": "^4.2.3",
+    "jest-canvas-mock": "^2.2.0",
+    "lint-staged": "^10.1.2",
+    "prettier": "^1.19.1",
+    "prettier-plugin-apex": "^1.0.0",
+    "rollup": "^2.6.1",
+    "rollup-plugin-cleaner": "^1.0.0",
+    "rollup-plugin-cleanup": "^3.1.1",
+    "rollup-plugin-copy": "^3.3.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && npm run lint",
+      "pre-push": "npm run test:coverage"
+    }
   },
   "lint-staged": {
-    "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [
+    "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,yaml,yml}": [
       "prettier --write"
     ],
-    "**/{aura,lwc}/**": [
+    "**/lwc/**": [
       "eslint"
     ]
   }
